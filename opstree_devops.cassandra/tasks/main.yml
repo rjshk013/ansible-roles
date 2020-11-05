@@ -1,0 +1,109 @@
+---
+- name: Create Cassandra Group
+  group:
+    name: "{{ group_name }}"
+    state: present
+
+- name: Create Cassandra User
+  user:
+    name: "{{ user_name }}"
+    state: present
+    group: "{{ group_name }}"
+    shell: /sbin/nologin
+
+- name: Installing Python 2.7 If not installed
+  apt:
+    name: python
+    state: present
+    update_cache: true
+
+- name: Include swap setup tasks
+  include_tasks: swap.yml
+
+- name: check cassandra source file
+  stat:
+    path: /tmp/apache-cassandra-{{ cassandra_version }}-bin.tar.gz
+  register: cassandra_source_file
+
+- name: download the source
+  get_url:
+    url: "{{ cassandra_basic_url }}{{ cassandra_download_url }}"
+    dest: /tmp/apache-cassandra-{{ cassandra_version }}-bin.tar.gz
+    owner: "{{ user_name }}"
+    group: "{{ group_name }}"
+    mode: 0755
+  when: not cassandra_source_file.stat.exists
+
+- name: Create home directory
+  file:
+    path: "{{ cassandra_home }}"
+    state: directory
+    owner: "{{ user_name }}"
+    group: "{{ group_name }}"
+    mode: 0755
+
+- name: Extract cassandra source
+  unarchive:
+    src: /tmp/apache-cassandra-{{ cassandra_version }}-bin.tar.gz
+    dest: "{{ cassandra_home }}"
+    owner: "{{ user_name }}"
+    group: "{{ group_name }}"
+    extra_opts: [--strip-components=1]
+    remote_src: true
+
+- name: Creating Cassandra data Dir
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+    owner: "{{ user_name }}"
+    group: "{{ group_name }}"
+    mode: 0755
+  with_items:
+    - "{{ cassandra_data_directory }}"
+    - "{{ cassandra_hints_directory }}"
+    - "{{ cassandra_commitlog_directory }}"
+    - "{{ cassandra_saved_caches_directory }}"
+
+- name: Export path
+  shell: "echo 'PATH=$PATH:{{ cassandra_path }}' > /etc/profile.d/custom-path.sh && . /etc/profile.d/custom-path.sh"
+  changed_when: true
+
+- name: install the configuration file
+  template:
+    src: cassandra.yaml.j2
+    dest: '{{ cassandra_home }}/conf/cassandra.yaml'
+    owner: "{{ user_name }}"
+    group: "{{ group_name }}"
+    mode: 0755
+  notify:
+    - stopped_cassandra
+    - started_cassandra
+
+- name: copy the startup script
+  template:
+    src: cassandra.sh
+    dest: /etc/init.d/cassandra
+    owner: root
+    group: root
+    mode: 0755
+  notify:
+    - stopped_cassandra
+    - started_cassandra
+
+- name: Enable_daemon
+  shell: update-rc.d cassandra "{{ item }}"
+  changed_when: true
+  with_items:
+    - "defaults"
+    - "enable"
+
+- name: Force all notified handlers to run at this point
+  meta: flush_handlers
+
+- name: Include cluster status check
+  include_tasks: cluster_status.yml
+
+- name: Include authorization setup tasks
+  include_tasks: authorization.yml
+  when: authorization_enable == 'yes'

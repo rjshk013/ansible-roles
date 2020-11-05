@@ -1,0 +1,10 @@
+---
+- name: stopped_cassandra
+  service:
+    name: cassandra
+    state: stopped
+
+- name: started_cassandra
+  service:
+    name: cassandra
+    state: started

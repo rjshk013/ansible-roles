@@ -1,0 +1,7 @@
+---
+- name: It will automate Cassandra setup
+  hosts: webservers
+  become: true
+  roles:
+    - opstree_devops.cassandra
+

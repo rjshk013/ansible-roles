@@ -1,0 +1,28 @@
+---
+- name: Create new admin role if not exists
+  shell: >
+    /opt/cassandra/bin/cqlsh -u {{ cassandra_old_admin_user }}
+    -p {{ cassandra_old_admin_password }}
+    -e "CREATE ROLE IF NOT EXISTS {{ cassandra_admin_user }} WITH SUPERUSER = true;"
+    {{ cassandra_local_hostname }}
+  when: authorization_enable == 'yes'
+  retries: 5
+
+- name: Set admin login and password
+  shell: >
+    /opt/cassandra/bin/cqlsh -u {{ cassandra_old_admin_user }}
+    -p {{ cassandra_old_admin_password }}
+    -e "ALTER ROLE {{ cassandra_admin_user }} WITH PASSWORD = '{{ cassandra_admin_password }}' AND LOGIN = true;"
+    {{ cassandra_local_hostname }}
+  when: authorization_enable == 'yes'
+
+# cassandra password changes are not always immediate. If password change occurs before replication factor is set...
+# do it again with the new login credentials.
+- name: Set system_auth replication factor with new password
+  shell: >
+    /opt/cassandra/bin/cqlsh -u {{ cassandra_admin_user }}
+    -p {{ cassandra_admin_password }}
+    -e "DROP ROLE {{ cassandra_old_admin_password }} ;"
+    {{ cassandra_local_hostname }}
+  when: authorization_enable == 'yes'
+  run_once: true

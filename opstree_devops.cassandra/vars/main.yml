@@ -1,0 +1,40 @@
+---
+# Cassandra version and node count
+cassandra_version: 3.11.6
+cassandra_basic_url: https://archive.apache.org/dist/cassandra/
+cassandra_download_url: "{{ cassandra_version }}/apache-cassandra-{{ cassandra_version }}-bin.tar.gz"
+cluster_name: MyCluster
+cassandra_node_count: 3
+vm_max_map_count: 1048575
+
+# User and Group for cassandra
+user_name: cassandra
+group_name: cassandra
+
+# Directory locations
+cassandra_home: /opt/cassandra
+cassandra_path: /opt/cassandra/bin
+cassandra_data_directory: /var/lib/cassandra/data
+cassandra_hints_directory: /var/lib/cassandra/data/hints
+cassandra_commitlog_directory: /var/lib/cassandra/data/commitlogs
+cassandra_saved_caches_directory: /var/lib/cassandra/data/saved_caches
+
+# For IP Address configuration in YML
+broadcast_address: "{{ ansible_default_ipv4.address }}"
+listen_address: "{{ ansible_default_ipv4.address }}"
+broadcast_rpc_address: "{{ ansible_default_ipv4.address }}"
+rpc_address: "{{ ansible_default_ipv4.address }}"
+cassandra_local_hostname: "{{ ansible_default_ipv4.address }}"
+
+# User Setting for Cassandra
+cassandra_admin_user: admin
+cassandra_admin_password: admin
+cassandra_old_admin_password: cassandra
+cassandra_old_admin_user: cassandra
+authorization_enable: "yes"
+
+# Port configurations
+cassandra_port: 9042
+rpc_port: 9160
+storage_port: 7000
+ssl_storage_port: 7001
