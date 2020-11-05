@@ -1,0 +1,13 @@
+---
+- hosts: webservers
+  become: yes
+  vars:
+    # set cluster_name before running the playbook for the first time; never change it afterwards
+    cassandra_cluster_name: my_cluster
+    # set installed java package version manually. required when using Ubuntu 18.04. see: [A note on Java 8 and Ubuntu 18.04](#a-note-on-Java-8-and-Ubuntu-18.04)
+    java_packages: openjdk-8-jdk
+  roles:
+    # ensure to install java and ntp first, e.g. by running these roles (see Dependencies section):
+    # - ansible-ntp
+    # - ansible-role-java
+    - ansible-cassandra
