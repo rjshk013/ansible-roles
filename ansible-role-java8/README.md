@@ -58,10 +58,22 @@ For Ubuntu < 16.04:
           java_packages:
             - openjdk-8-jdk
 
-## License
 
-MIT / BSD
+How to do
+----------
 
-## Author Information
+clone the repository https://github.com/rjshk013/ansible-roles 
 
-This role was created in 2014 by [Jeff Geerling](https://www.jeffgeerling.com/), author of [Ansible for DevOps](https://www.ansiblefordevops.com/).
+cd ansible-role-java8
+
+edit playbook file java8install
+
+run the playbbok
+
+Or you can download the role using ansible galaxy :
+
+ansible-galaxy install geerlingguy.java
+
+It will bydefault installed/downloaded on .ansible/roles folder.
+
+so run playbook from that location
