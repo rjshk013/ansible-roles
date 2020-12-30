@@ -1,0 +1,4 @@
+- hosts: db-servers
+  roles:
+    - role: ansible-role-maven
+      maven_version: '3.6.3'
